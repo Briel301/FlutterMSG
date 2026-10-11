@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'core/network/connectivity_service.dart';
+import 'core/supabase/supabase_config.dart';
 import 'core/theme/app_theme.dart';
 import 'features/ui_showcase/views/showcase_home_view.dart';
 
-void main() {
+void main() async {
+  // Asegura enlace con el motor de Flutter antes de llamadas asíncronas
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicialización de servicios de infraestructura
+  await SupabaseConfig.initialize();
+  await ConnectivityService().initialize();
+
   runApp(const FinChatApp());
 }
 
@@ -13,11 +23,18 @@ class FinChatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FinChat',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const ShowcaseHomeView(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: ConnectivityService()),
+      ],
+      child: MaterialApp(
+        title: 'FinChat',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        home: const ShowcaseHomeView(),
+      ),
     );
   }
 }

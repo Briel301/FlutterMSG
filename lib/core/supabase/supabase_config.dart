@@ -1,27 +1,85 @@
-/// Configuración de constantes y nombres de tablas/buckets para Supabase.
-class SupabaseConfig {
-  /// URL del proyecto en Supabase (debe configurarse con variables de entorno en producción).
-  static const String supabaseUrl = 'https://tu-proyecto.supabase.co';
+import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-  /// Anon Key pública de Supabase con Row Level Security (RLS) habilitado.
-  static const String supabaseAnonKey = 'tu-anon-key-publica';
+/// Gestor centralizado de configuración y clientes de Supabase para FinChat.
+abstract final class SupabaseConfig {
+  SupabaseConfig._();
 
-  // --- Nombres de Tablas de Base de Datos (PostgreSQL) ---
+  // URL del proyecto Supabase
+  static const String supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://tu-proyecto.supabase.co',
+  );
+
+  // Clave pública anónima de Supabase con RLS
+  static const String supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: 'tu-anon-key-publica',
+  );
+
+  // Tablas en PostgreSQL
   static const String tableProfiles = 'profiles';
   static const String tableChats = 'chats';
   static const String tableMessages = 'messages';
   static const String tableChatParticipants = 'chat_participants';
 
-  // --- Nombres de Buckets de Almacenamiento (Supabase Storage) ---
-  /// Bucket para avatares de perfil (WebP, máx 256x256, máx 100 KB)
+  // Buckets en Supabase Storage
   static const String bucketAvatars = 'avatars';
-
-  /// Bucket para fotos y capturas enviadas en chats (comprimidas a WebP/JPEG, calidad 75%)
   static const String bucketChatImages = 'chat_images';
-
-  /// Bucket para notas de audio (formato AAC mono, máx 1 minuto, máx 300 KB)
   static const String bucketChatAudios = 'chat_audios';
-
-  /// Bucket para videos comprimidos (H.264 720p/480p)
   static const String bucketChatVideos = 'chat_videos';
+
+  static bool _isInitialized = false;
+
+  // Verifica si el SDK de Supabase ya fue inicializado
+  static bool get isInitialized {
+    if (_isInitialized) return true;
+    try {
+      Supabase.instance;
+      _isInitialized = true;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Inicializa el SDK de Supabase de manera segura
+  static Future<void> initialize({
+    String? url,
+    String? anonKey,
+    String? publishableKey,
+  }) async {
+    if (isInitialized) return;
+
+    try {
+      final effectiveKey = publishableKey ?? anonKey ?? supabaseAnonKey;
+      await Supabase.initialize(
+        url: url ?? supabaseUrl,
+        publishableKey: effectiveKey,
+      );
+      _isInitialized = true;
+    } catch (error, stackTrace) {
+      _isInitialized = false;
+      debugPrint('[SupabaseConfig] Error al inicializar Supabase: $error\n$stackTrace');
+    }
+  }
+
+  // Cliente raíz de Supabase
+  static SupabaseClient get client {
+    if (!isInitialized) {
+      throw StateError(
+        'Supabase no ha sido inicializado. Ejecuta SupabaseConfig.initialize() antes de usar el cliente.',
+      );
+    }
+    return Supabase.instance.client;
+  }
+
+  // Cliente de autenticación
+  static GoTrueClient get auth => client.auth;
+
+  // Constructor de consultas PostgREST para una tabla
+  static SupabaseQueryBuilder from(String table) => client.from(table);
+
+  // Cliente de almacenamiento de archivos
+  static SupabaseStorageClient get storage => client.storage;
 }

@@ -88,7 +88,7 @@ class _MediaRecorderViewState extends State<MediaRecorderView> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            OptimizationUtils.formatDuration(seconds),
+                            OptimizationUtils.formatDuration(Duration(seconds: seconds)),
                             style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 1.5),
                           ),
                           Text(

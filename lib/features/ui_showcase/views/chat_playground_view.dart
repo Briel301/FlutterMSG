@@ -286,7 +286,7 @@ class _ChatPlaygroundViewState extends State<ChatPlaygroundView> {
                         children: [
                           LinearProgressIndicator(value: 0.4, color: AppTheme.primaryColor, backgroundColor: Colors.grey.shade300),
                           const SizedBox(height: 4),
-                          Text('Nota de voz (${OptimizationUtils.formatDuration(msg.durationSeconds ?? 0)} / máx 01:00)', style: const TextStyle(fontSize: 11)),
+                          Text('Nota de voz (${OptimizationUtils.formatDuration(Duration(seconds: msg.durationSeconds ?? 0))} / máx 01:00)', style: const TextStyle(fontSize: 11)),
                         ],
                       ),
                     ),
