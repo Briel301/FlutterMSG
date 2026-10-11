@@ -32,9 +32,9 @@ class MediaService extends ChangeNotifier {
       category: MediaCategory.image,
       localPath: fakeLocalPath,
       remoteStorageUrl: 'https://supabase.co/storage/v1/object/public/chat_images/photo_opt.webp',
-      originalSizeBytes: comp['originalBytes'] as int,
-      compressedSizeBytes: comp['compressedBytes'] as int,
-      savingsPercent: comp['savingsPercent'] as double,
+      originalSizeBytes: comp.originalBytes,
+      compressedSizeBytes: comp.compressedBytes,
+      savingsPercent: comp.savingsPercentage,
       createdAt: DateTime.now(),
     );
   }
@@ -66,7 +66,7 @@ class MediaService extends ChangeNotifier {
     _recordDurationSeconds = 0;
     notifyListeners();
 
-    final comp = OptimizationUtils.estimateAudioCompression(finalSeconds);
+    final comp = OptimizationUtils.estimateAudioCompression(Duration(seconds: finalSeconds));
 
     return MediaAttachment(
       id: 'att_audio_${DateTime.now().millisecondsSinceEpoch}',
@@ -74,9 +74,9 @@ class MediaService extends ChangeNotifier {
       localPath: 'recordings/voice_note.m4a',
       remoteStorageUrl: 'https://supabase.co/storage/v1/object/public/chat_audios/note.m4a',
       durationSeconds: finalSeconds,
-      originalSizeBytes: comp['originalBytes'] as int,
-      compressedSizeBytes: comp['compressedBytes'] as int,
-      savingsPercent: comp['savingsPercent'] as double,
+      originalSizeBytes: comp.originalBytes,
+      compressedSizeBytes: comp.compressedBytes,
+      savingsPercent: comp.savingsPercentage,
       createdAt: DateTime.now(),
     );
   }
@@ -96,7 +96,7 @@ class MediaService extends ChangeNotifier {
   }) async {
     const originalBytes = 35000000; // ~35 MB
     const compressedBytes = 8500000; // ~8.5 MB a 720p optimizado
-    final savings = OptimizationUtils.calculateSavingsPercent(originalBytes, compressedBytes);
+    final savings = OptimizationUtils.calculateSavingsPercentage(originalBytes, compressedBytes);
 
     await Future.delayed(const Duration(milliseconds: 600));
 
